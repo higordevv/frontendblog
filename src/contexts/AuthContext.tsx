@@ -1,9 +1,7 @@
 import React, { createContext, use, useEffect, useState } from "react";
-import { setCookie, parseCookies } from "nookies";
+import { setCookie, parseCookies, destroyCookie } from "nookies";
 import Router from "next/router";
 import { api, recoverUserInfo } from "../service/api";
-import { decode } from "jsonwebtoken";
-import { useLoaderData } from "@remix-run/react";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -35,6 +33,9 @@ export function AuthProvider({ children }: any) {
     const { "nextauth.token": token } = parseCookies();
     if (token) recoverUserInfo().then((res) => console.log(res.data.name));
   }, []);
+
+  const logOut = () => destroyCookie(undefined, "nextauth");
+
   const singUp = async (data: FormData) => {
     try {
       const res: any = await await (await api.post("user/create", data)).data;
@@ -47,6 +48,7 @@ export function AuthProvider({ children }: any) {
       console.log(err);
     }
   };
+
   const signIn = async ({ email, password }: FormData) => {
     const { token, user }: any = await (
       await api.post("/login", { email, password })
